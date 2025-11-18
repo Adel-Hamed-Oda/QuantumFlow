@@ -15,21 +15,19 @@ export default function QuantumChatBot() {
 
     const userMessage: Message = { sender: "user", text: input };
     setMessages([...messages, userMessage]);
+    setInput("");
 
     try {
-      const response = await axios.post("http://localhost:8000/ask", { question: input });
+      const response = await axios.post<{ answer: string }>("http://localhost:8000/ask", { question: input });
       const botMessage: Message = { sender: "bot", text: response.data.answer };
-      setMessages((prev) => [...prev, userMessage, botMessage]);
+      setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
       console.error(err);
       setMessages((prev) => [
         ...prev,
-        userMessage,
         { sender: "bot", text: "Error: Could not get a response from the server." },
       ]);
     }
-
-    setInput("");
   };
 
   return (
@@ -44,6 +42,7 @@ export default function QuantumChatBot() {
       <input
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        onKeyPress={(e) => e.key === "Enter" && sendMessage()}
         placeholder="Ask a quantum question..."
         style={{ width: "80%" }}
       />
